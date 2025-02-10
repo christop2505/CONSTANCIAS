@@ -45,9 +45,9 @@ const enviarCorreo = async (email, numero_constancia) => {
 };
 
 expressApp.post('/registrar-orden', async (req, res) => {
-    const { Id_usuario, detalle, proveedor, tipo, numero_orden, email } = req.body;
+    const { Id_usuario, detalle, proveedor, tipo, Norden, email } = req.body;
     
-    if (!Id_usuario || !detalle || !proveedor || !tipo || !numero_orden || !email) {
+    if (!Id_usuario || !detalle || !proveedor || !tipo || !Norden || !email) {
         return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
@@ -55,23 +55,23 @@ expressApp.post('/registrar-orden', async (req, res) => {
         // Registrar la orden en la base de datos
         const [result] = await pool.query(
             'CALL RegistrarOrden(?, ?, ?, ?, ?)',
-            [Id_usuario, detalle, proveedor, tipo, numero_orden]
+            [Id_usuario, detalle, proveedor, tipo, Norden]
         );
 
         // Buscar el último numero_constancia generado para esta orden
         const [constanciaResult] = await pool.query(
-            'SELECT N°Contancia FROM Acta WHERE N°orden = ? ORDER BY N°Contancia DESC LIMIT 1',
-            [numero_orden]
+            'SELECT NContancia FROM Acta WHERE Norden = ? ORDER BY N°Contancia DESC LIMIT 1',
+            [Norden]
         );
 
         if (constanciaResult.length === 0) {
             return res.status(500).json({ error: 'No se encontró la constancia para esta orden' });
         }
 
-        const numero_constancia = constanciaResult[0].id_constancia;
+        const NContancia = constanciaResult[0].NContancia;
 
         // Enviar correo con enlaces de aprobación/rechazo usando el numero_constancia
-        await enviarCorreo(email, numero_constancia);
+        await enviarCorreo(email, NContancia);
 
         res.json({ message: 'Orden registrada exitosamente y correo enviado', numero_constancia });
     } catch (error) {
@@ -93,7 +93,7 @@ expressApp.get('/aprobar-orden', async (req, res) => {
         
 
         // Actualizar la tabla Acta, estableciendo estado = 1 (aprobado)
-        await pool.query('UPDATE Acta SET estado = 1 WHERE N°Contancia = ?', [numero_constancia]);
+        await pool.query('UPDATE Acta SET estado = 1 WHERE NContancia = ?', [numero_constancia]);
 
         res.send('Orden aprobada con éxito y estado actualizado en Acta');
     } catch (error) {
@@ -113,7 +113,7 @@ expressApp.get('/rechazar-orden', async (req, res) => {
     try {
 
         // No cambia el estado en Acta porque por defecto es 0 (rechazado)
-        await pool.query('UPDATE Acta SET estado = 0 WHERE N°Contancia = ?', [numero_constancia]);
+        await pool.query('UPDATE Acta SET estado = 0 WHERE NContancia = ?', [numero_constancia]);
 
         res.send('Orden rechazada con éxito y estado actualizado en Acta');
     } catch (error) {
