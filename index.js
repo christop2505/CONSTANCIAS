@@ -60,7 +60,7 @@ expressApp.post('/registrar-orden', async (req, res) => {
 
         // Buscar el último numero_constancia generado para esta orden
         const [constanciaResult] = await pool.query(
-            'SELECT NContancia FROM Acta WHERE Norden = ? ORDER BY N°Contancia DESC LIMIT 1',
+            'SELECT NContancia FROM Acta WHERE Norden = ? ORDER BY NContancia DESC LIMIT 1',
             [Norden]
         );
 
