@@ -73,7 +73,7 @@ expressApp.post('/registrar-orden', async (req, res) => {
         // Enviar correo con enlaces de aprobación/rechazo usando el numero_constancia
         await enviarCorreo(email, NContancia);
 
-        res.json({ message: 'Orden registrada exitosamente y correo enviado', numero_constancia });
+        res.json({ message: 'Orden registrada exitosamente y correo enviado', NContancia });
     } catch (error) {
         console.error('Error al registrar la orden:', error);
         res.status(500).json({ error: 'Error en el servidor' });
