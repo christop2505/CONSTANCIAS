@@ -4,6 +4,10 @@ import express from 'express';
 import nodemailer from 'nodemailer';
 import { pool } from './db.js';
 import { PORT, EMAIL_USER, EMAIL_PASS, SERVER_URL } from './config.js';
+import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
+
 
 const expressApp = express();
 expressApp.use(express.json()); // Middleware para parsear JSON
@@ -81,21 +85,86 @@ expressApp.post('/registrar-orden', async (req, res) => {
 });
 
 
-// Aprobar orden y actualizar Acta
+const obtenerFirmaUsuario = async (idUsuario) => {
+    const [usuario] = await pool.query('SELECT firma FROM Usuario WHERE Id_usuario = ?', [idUsuario]);
+    if (usuario.length > 0 && usuario[0].firma) {
+        return `data:image/png;base64,${usuario[0].firma.toString('base64')}`;
+    }
+    return null;
+};
+
+const generarPDF = async (numeroOrden, proveedor, detalle, firma) => {
+    const htmlContent = `
+    <html>
+    <head><style>
+        body { font-family: Arial, sans-serif; }
+        .header { text-align: center; font-size: 18px; font-weight: bold; }
+        .firma { margin-top: 50px; text-align: left; }
+        .firma img { width: 200px; height: auto; }
+    </style></head>
+    <body>
+        <div class="header">ACTA DE CONFORMIDAD</div>
+        <p>Consta en el presente documento que se ha recibido el servicio correspondiente a la Orden de Servicio Nro. <b>${numeroOrden}</b>, realizado por el proveedor:</p>
+        <h2>${proveedor}</h2>
+        <p>Producto recibido:</p>
+        <h3>${detalle}</h3>
+        <p>Chiclayo, ${new Date().toLocaleDateString()}</p>
+        <div class="firma">
+            ${firma ? `<img src="${firma}" alt="Firma Autorizada">` : '<p>_______________________________</p>'}
+            <p>Firma Autorizada</p>
+        </div>
+    </body>
+    </html>`;
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setContent(htmlContent);
+    const pdfPath = path.join("./", `acta_${numeroOrden}.pdf`);
+    await page.pdf({ path: pdfPath, format: 'A4' });
+    await browser.close();
+    return pdfPath;
+};
+
+const enviarCorreoConPDF = async (email, pdfPath, numeroOrden) => {
+    const mailOptions = {
+        from: EMAIL_USER,
+        to: email,
+        subject: `Acta de Conformidad - Orden ${numeroOrden}`,
+        text: 'Adjunto encontrará el acta de conformidad generada.',
+        attachments: [{ filename: `acta_${numeroOrden}.pdf`, path: pdfPath }]
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Correo con PDF enviado con éxito');
+    } catch (error) {
+        console.error('Error al enviar el correo:', error);
+    }
+};
 expressApp.get('/aprobar-orden', async (req, res) => {
     const { numero_constancia } = req.query;
-
     if (!numero_constancia) {
-        return res.status(400).json({ error: 'Número de orden requerido' });
+        return res.status(400).json({ error: 'Número de constancia requerido' });
     }
 
     try {
-        
+        const [orden] = await pool.query('SELECT Id_orden FROM Acta WHERE NContancia = ?', [numero_constancia]);
+        if (orden.length === 0) {
+            return res.status(404).json({ error: 'Orden no encontrada' });
+        }
 
-        // Actualizar la tabla Acta, estableciendo estado = 1 (aprobado)
+        const { Id_orden } = orden[0];
+        const [orden_2] = await pool.query('SELECT * FROM orden WHERE ID = ?', [Id_orden]);
+        if (orden.length === 0) {
+            return res.status(404).json({ error: 'Orden no encontrada' });
+        }
+        const email="cflores@parquedelnorte.com"
+        const { Norden, Proveedor, Detalle, Id_usuario } = orden_2[0];
+        const firma = await obtenerFirmaUsuario(Id_usuario);
         await pool.query('UPDATE Acta SET estado = 1 WHERE NContancia = ?', [numero_constancia]);
-
-        res.send('Orden aprobada con éxito y estado actualizado en Acta');
+        const pdfPath = await generarPDF(Norden, Proveedor, Detalle, firma);
+        await enviarCorreoConPDF(email, pdfPath, Norden);
+        res.send('Orden aprobada y correo con acta enviado');
     } catch (error) {
         console.error('Error al aprobar la orden:', error);
         res.status(500).json({ error: 'Error en el servidor' });
