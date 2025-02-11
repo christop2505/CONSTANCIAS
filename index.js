@@ -113,6 +113,7 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma) => {
             ${firma ? `<img src="${firma}" alt="Firma Autorizada">` : '<p>_______________________________</p>'}
             <p>Firma Autorizada</p>
         </div>
+        <div class="footer">Documento generado por sistema</div>
     </body>
     </html>`;
 
