@@ -18,14 +18,14 @@ const transporter = nodemailer.createTransport({
 });
 
 // Función para enviar correo
-const enviarCorreo = async (email, numero_constancia) => {
+const enviarCorreo = async (email, numero_constancia,numero_orden) => {
     const approveLink = `${SERVER_URL}/aprobar-orden?numero_constancia=${numero_constancia}`;
     const rejectLink = `${SERVER_URL}/rechazar-orden?numero_constancia=${numero_constancia}`;
 
     const mailOptions = {
         from: EMAIL_USER,
         to: email,
-        subject: 'Solicitud de Aprobación de Orden',
+        subject: 'Solicitud de Aprobación de Acta de conformidad:'+ `${numero_orden}`,
         html: `
             <p>Se ha registrado una nueva orden con el número <strong>${numero_constancia}</strong>.</p>
             <p>Por favor, elige una opción:</p>
@@ -71,7 +71,7 @@ expressApp.post('/registrar-orden', async (req, res) => {
         const NContancia = constanciaResult[0].NContancia;
 
         // Enviar correo con enlaces de aprobación/rechazo usando el numero_constancia
-        await enviarCorreo(email, NContancia);
+        await enviarCorreo(email, NContancia,Norden);
 
         res.json({ message: 'Orden registrada exitosamente y correo enviado', NContancia });
     } catch (error) {
