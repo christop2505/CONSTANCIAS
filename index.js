@@ -86,7 +86,7 @@ expressApp.post('/registrar-orden', async (req, res) => {
 
 
 const obtenerFirmaUsuario = async (idUsuario) => {
-    const [usuario] = await pool.query('SELECT firma FROM Usuario WHERE Id_usuario = ?', [idUsuario]);
+    const [usuario] = await pool.query('SELECT firma FROM usuario WHERE Id_usuario = ?', [idUsuario]);
     if (usuario.length > 0 && usuario[0].firma) {
         return `data:image/png;base64,${usuario[0].firma.toString('base64')}`;
     }
