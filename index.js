@@ -93,29 +93,50 @@ const obtenerFirmaUsuario = async (idUsuario) => {
     return null;
 };
 
-const generarPDF = async (numeroOrden, proveedor, detalle, firma) => {
+const generarPDF = async (numeroOrden, proveedor, detalle, firma, usuario) => {
+    const fechaActual = new Date().toLocaleDateString();
+    
     const htmlContent = `
     <html>
     <head><style>
-        body { font-family: Arial, sans-serif; }
-        .header { text-align: center; font-size: 18px; font-weight: bold; }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 40px; }
+        .header img { width: 150px; position: absolute; left: 0; }
+        .header p { font-size: 12px; color: gray; }
+        .title { font-size: 18px; font-weight: bold; margin-top: 20px; }
+        .content { margin-top: 30px; font-size: 16px; }
         .firma { margin-top: 50px; text-align: left; }
-        .firma img { width: 200px; height: auto; }
+        .firma img { width: 200px; }
+        .footer { position: fixed; bottom: 0; width: 100%; font-size: 12px; }
     </style></head>
     <body>
-        <div class="header">ACTA DE CONFORMIDAD</div>
-        <p>Consta en el presente documento que se ha recibido el servicio correspondiente a la Orden de Servicio Nro. <b>${numeroOrden}</b>, realizado por el proveedor:</p>
-        <h2>${proveedor}</h2>
-        <p>Producto recibido:</p>
-        <h3>${detalle}</h3>
-        <p>Chiclayo, ${new Date().toLocaleDateString()}</p>
-        <div class="firma">
-            ${firma ? `<img src="${firma}" alt="Firma Autorizada">` : '<p>_______________________________</p>'}
-            <p>Firma Autorizada</p>
+        <div class="header">
+            <img src="https://www.jardinesdelapaz.com/logo.png" alt="Logo">
+            <p>Parque Del Norte S.A.<br>Atención al Cliente: 274841 - 240125<br>
+            C. Pascual Saco N° 270 Res. Lurín - Chiclayo<br>
+            Email: informes@parquedelnorte.com</p>
         </div>
+        
+        <div class="title">ACTA DE CONFORMIDAD</div>
+        <p class="content">
+            Conste por el presente documento que, en la fecha ${fechaActual}, 
+            se está recibiendo el servicio correspondiente a la Orden de Servicio Nro. <b>${numeroOrden}</b>, 
+            realizado por el proveedor:
+        </p>
+        <h2>${proveedor}</h2>
+        <p class="content"><b>Detalle del producto recibido:</b></p>
+        <h3>${detalle}</h3>
+
+        <p class="content">Chiclayo, ${fechaActual}</p>
+
+        <div class="firma">
+            ${firma ? `<img src="${firma}" alt="Firma">` : '<p>_______________________________</p>'}
+            <p>${usuario}</p>
+        </div>
+
         <div class="footer">Documento generado por sistema</div>
     </body>
     </html>`;
+
 
     const browser = await puppeteer.launch({
         headless: 'new',
