@@ -172,7 +172,7 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
     await page.pdf({ 
         path: pdfPath, 
         format: 'A4', 
-        margin: {  right: '15mm',  left: '15mm' }
+        margin: {  right: '5mm',  left: '5mm' }
     });
 
     await browser.close();
