@@ -187,12 +187,13 @@ expressApp.get('/aprobar-orden', async (req, res) => {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
         
-        const { Correo,Nombre_Completo } = V_usuario[0];
+       
         const { Norden, Proveedor, Detalle, Id_usuario } = orden_2[0];
         const [V_usuario] = await pool.query('SELECT Correo , Nombre_Completo FROM usuario WHERE Id_usuario = ?', [idUsuario]);
         if (orden.length === 0) {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
+        const { Correo,Nombre_Completo } = V_usuario[0];
         const firma = await obtenerFirmaUsuario(Id_usuario);
         await pool.query('UPDATE Acta SET estado = 1 WHERE NContancia = ?', [numero_constancia]);
         const pdfPath = await generarPDF(Norden, Proveedor, Detalle, firma,Nombre_Completo);
