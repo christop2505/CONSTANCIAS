@@ -100,7 +100,7 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
     <html>
     <head><style>
         body { font-family: Arial, sans-serif; margin: 40px; }
-        .header { background-color: green; color: white; padding: 10px; text-align: left; }
+        .header { background-color: green; color: green; padding: 10px; text-align: left; }
         .header p { font-size: 12px; margin: 0; }
         .title { font-size: 18px; font-weight: bold; text-align: center; margin-top: 20px; }
         .content { margin-top: 30px; font-size: 16px; text-align: left; }
