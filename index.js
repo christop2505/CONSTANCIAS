@@ -94,7 +94,11 @@ const obtenerFirmaUsuario = async (idUsuario) => {
 };
 
 const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Completo) => {
-    const fechaActual = new Date().toLocaleDateString();
+    const fechaActual = new Date().toLocaleDateString('es-PE', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
     
     const htmlContent = `
     <html>
@@ -118,16 +122,16 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
         
         <div class="title">ACTA DE CONFORMIDAD</div>
         <p class="content">
-            Conste por el presente documento que, en la fecha, se está recibiendo el servicio correspondiente a la Orden de Servicio Nro. <b>${numeroOrden}</b>, 
+            Conste por el presente documento, que en la fecha se está recibiendo el Servicio correspondiente a la Orden de ${Tipo} Nro. <b>${numeroOrden}</b>, 
             realizado por el proveedor:
         </p>
         <h2 style="text-align:center;">${proveedor}</h2>
-        <p class="content">Mediante este documento se deja constancia que la empresa PARQUE DEL NORTE S.A. se encuentra conforme con el producto recibido:</p>
+        <p class="content">Mediante este documento se deja constancia que la empresa <b>PARQUE DEL NORTE S.A.</b> se encuentra conforme con el servicio recibido:</p>
         A continuación, se detalla el producto de: 
         </p>
         <h3 style="text-align:center;">${detalle}</h3>
         <p class="content">
-            Habiéndose culminado el presente trabajo en satisfacción del usuario y correspondiente a la Orden de Servicio Nro. ${numeroOrden}, se brinda la conformidad por parte de PARQUE DEL NORTE S.A., y se firma la presente. </p>
+            Habiéndose culminado el presente trabajo en satisfacción del usuario y correspondiente a la Orden de Servicio Nro. <b>${numeroOrden}</b>, se brinda la conformidad por parte de <b>PARQUE DEL NORTE S.A</b>., y se firma la presente. </p>
         <p class="content">Chiclayo, ${fechaActual}</p>
 
        <div class="firma">
@@ -186,7 +190,7 @@ expressApp.get('/aprobar-orden', async (req, res) => {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
         
-        const { Norden, Proveedor, Detalle, Id_usuario } = orden_2[0];
+        const { Norden, Proveedor, Detalle, Id_usuario,Tipo } = orden_2[0];
         const [V_usuario] = await pool.query('SELECT Correo , Nombre_Completo FROM usuario WHERE Id_usuario = ?', [Id_usuario]);
         if (orden.length === 0) {
             return res.status(404).json({ error: 'Orden no encontrada' });
@@ -194,7 +198,7 @@ expressApp.get('/aprobar-orden', async (req, res) => {
         const { Correo,Nombre_Completo } = V_usuario[0];
         const firma = await obtenerFirmaUsuario(Id_usuario);
         await pool.query('UPDATE Acta SET estado = 1 WHERE NContancia = ?', [numero_constancia]);
-        const pdfPath = await generarPDF(Norden, Proveedor, Detalle, firma,Nombre_Completo);
+        const pdfPath = await generarPDF(Norden, Proveedor, Detalle, firma,Nombre_Completo,Tipo);
         await enviarCorreoConPDF(Correo, pdfPath, Norden);
         res.send('Orden aprobada y correo con acta enviado');
     } catch (error) {
