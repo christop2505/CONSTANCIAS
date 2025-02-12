@@ -131,7 +131,7 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
         </p>
         <h3 style="text-align:center;">${detalle}</h3>
         <p class="content">
-            Habiéndose culminado el presente trabajo en satisfacción del usuario y correspondiente a la Orden de Servicio Nro. <b>${numeroOrden}</b>, se brinda la conformidad por parte de <b>PARQUE DEL NORTE S.A</b>., y se firma la presente. </p>
+            Habiéndose culminado el presente trabajo en satisfacción del usuario y correspondiente a la Orden de ${Tipo} Nro. <b>${numeroOrden}</b>, se brinda la conformidad por parte de <b>PARQUE DEL NORTE S.A</b>., y se firma la presente. </p>
         <p class="content">Chiclayo, ${fechaActual}</p>
 
        <div class="firma">
