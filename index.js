@@ -93,7 +93,7 @@ const obtenerFirmaUsuario = async (idUsuario) => {
     return null;
 };
 
-const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Completo) => {
+const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Completo,Tipo) => {
     const fechaActual = new Date().toLocaleDateString('es-PE', {
         day: 'numeric',
         month: 'long',
