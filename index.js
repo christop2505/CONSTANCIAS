@@ -93,7 +93,7 @@ const obtenerFirmaUsuario = async (idUsuario) => {
     return null;
 };
 
-const generarPDF = async (numeroOrden, proveedor, detalle, firma, usuario) => {
+const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Completo) => {
     const fechaActual = new Date().toLocaleDateString();
     
     const htmlContent = `
@@ -103,7 +103,7 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, usuario) => {
         .header { background-color: green; color: white; padding: 10px; text-align: left; }
         .header p { font-size: 12px; margin: 0; }
         .title { font-size: 18px; font-weight: bold; text-align: center; margin-top: 20px; }
-        .content { margin-top: 30px; font-size: 16px; text-align: center; }
+        .content { margin-top: 30px; font-size: 16px; text-align: left; }
         .firma { margin-top: 50px; text-align: left; }
         .firma img { width: 200px; }
         .footer { position: fixed; bottom: 0; width: 100%; font-size: 12px; text-align: center; }
@@ -123,17 +123,17 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, usuario) => {
             realizado por el proveedor:
         </p>
         <h2 style="text-align:center;">${proveedor}</h2>
-        <p class="content"><b>Mediante este documento se deja constancia que la empresa PARQUE DEL NORTE S.A. se encuentra conforme con el producto recibido.
-        :</b></p>
+        <p class="content">Mediante este documento se deja constancia que la empresa PARQUE DEL NORTE S.A. se encuentra conforme con el producto recibido:</p>
         A continuación, se detalla el producto de: 
-        :</b></p>
+        </p>
         <h3 style="text-align:center;">${detalle}</h3>
         <p class="content">
-            Habiéndose culminado el presente trabajo en satisfacción del usuario y correspondiente a la Orden de Servicio Nro. ${numeroOrden}., se brinda la conformidad por parte de PARQUE DEL NORTE S.A., y se firma la presente. </p>
+            Habiéndose culminado el presente trabajo en satisfacción del usuario y correspondiente a la Orden de Servicio Nro. ${numeroOrden}, se brinda la conformidad por parte de PARQUE DEL NORTE S.A., y se firma la presente. </p>
         <p class="content">Chiclayo, ${fechaActual}</p>
 
-        <div class="firma">
+       <div class="firma">
             ${firma ? `<img src="${firma}" alt="Firma">` : '<p>_______________________________</p>'}
+            <p>${Nombre_Completo}</p>
         </div>
 
         <div class="footer">Documento generado por sistema</div>
@@ -186,12 +186,16 @@ expressApp.get('/aprobar-orden', async (req, res) => {
         if (orden.length === 0) {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
-        const email="cflores@parquedelnorte.com"
+        const [V_usuario] = await pool.query('SELECT Correo , Nombre_Completo FROM usuario WHERE Id_usuario = ?', [idUsuario]);
+        if (orden.length === 0) {
+            return res.status(404).json({ error: 'Orden no encontrada' });
+        }
+        const { Correo,Nombre_Completo } = V_usuario[0];
         const { Norden, Proveedor, Detalle, Id_usuario } = orden_2[0];
         const firma = await obtenerFirmaUsuario(Id_usuario);
         await pool.query('UPDATE Acta SET estado = 1 WHERE NContancia = ?', [numero_constancia]);
-        const pdfPath = await generarPDF(Norden, Proveedor, Detalle, firma);
-        await enviarCorreoConPDF(email, pdfPath, Norden);
+        const pdfPath = await generarPDF(Norden, Proveedor, Detalle, firma,Nombre_Completo);
+        await enviarCorreoConPDF(Correo, pdfPath, Norden);
         res.send('Orden aprobada y correo con acta enviado');
     } catch (error) {
         console.error('Error al aprobar la orden:', error);
