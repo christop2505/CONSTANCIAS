@@ -93,19 +93,32 @@ const obtenerFirmaUsuario = async (idUsuario) => {
     return null;
 };
 
-const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Completo,Tipo) => {
+const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Completo, Tipo) => {
     const fechaActual = new Date().toLocaleDateString('es-PE', {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
     });
-    
+
     const htmlContent = `
     <html>
     <head><style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .header { background-color: green; color: green; padding: 10px; text-align: left; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        .header { 
+            background-color: green; 
+            color: white; 
+            padding: 10px; 
+            text-align: left; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%;
+        }
         .header p { font-size: 12px; margin: 0; }
+        .container { 
+            margin-top: 80px; /* Espacio para no solaparse con el header */
+            padding: 0 2cm; /* Márgenes laterales solo en el contenido */
+        }
         .title { font-size: 24px; font-weight: bold; text-align: center; margin-top: 20px; }
         .content { margin-top: 30px; font-size: 16px; text-align: left; }
         .firma { margin-top: 50px; text-align: left; }
@@ -120,23 +133,27 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
             <p>Email: informes@parquedelnorte.com</p>
         </div>
         
-        <div class="title">ACTA DE CONFORMIDAD</div>
-        <p class="content">
-            Conste por el presente documento, que en la fecha se está recibiendo el Servicio correspondiente a la Orden de ${Tipo} Nro. <b>${numeroOrden}</b>, 
-            realizado por el proveedor:
-        </p>
-        <h2 style="text-align:center;font-size: 20px;">${proveedor.toUpperCase()}</h2>
-        <p class="content">Mediante este documento se deja constancia que la empresa <b>PARQUE DEL NORTE S.A.</b> se encuentra conforme con el servicio recibido:</p>
-        A continuación, se detalla el producto de: 
-        </p>
-        <h2 style="text-align:center;font-size: 20px;">${detalle.toUpperCase()}</h2>
-        <p class="content">
-            Habiéndose culminado el presente trabajo en satisfacción del usuario y correspondiente a la Orden de ${Tipo} Nro. <b>${numeroOrden}</b>, se brinda la conformidad por parte de <b>PARQUE DEL NORTE S.A</b>., y se firma la presente. </p>
-        <p class="content">Chiclayo, ${fechaActual}</p>
+        <div class="container">
+            <div class="title">ACTA DE CONFORMIDAD</div>
+            <p class="content">
+                Conste por el presente documento, que en la fecha se está recibiendo el Servicio correspondiente a la Orden de ${Tipo} Nro. <b>${numeroOrden}</b>, 
+                realizado por el proveedor:
+            </p>
+            <h2 style="text-align:center;font-size: 20px;">${proveedor.toUpperCase()}</h2>
+            <p class="content">Mediante este documento se deja constancia que la empresa <b>PARQUE DEL NORTE S.A.</b> se encuentra conforme con el servicio recibido:</p>
+            <p class="content">
+                A continuación, se detalla el producto de:
+            </p>
+            <h2 style="text-align:center;font-size: 20px;">${detalle.toUpperCase()}</h2>
+            <p class="content">
+                Habiéndose culminado el presente trabajo en satisfacción del usuario y correspondiente a la Orden de ${Tipo} Nro. <b>${numeroOrden}</b>, se brinda la conformidad por parte de <b>PARQUE DEL NORTE S.A</b>., y se firma la presente.
+            </p>
+            <p class="content">Chiclayo, ${fechaActual}</p>
 
-       <div class="firma">
-            ${firma ? `<img src="${firma}" alt="Firma">` : '<p>_______________________________</p>'}
-            <p>${Nombre_Completo}</p>
+            <div class="firma">
+                ${firma ? `<img src="${firma}" alt="Firma">` : '<p>_______________________________</p>'}
+                <p>${Nombre_Completo}</p>
+            </div>
         </div>
 
         <div class="footer">Documento generado por sistema</div>
@@ -149,16 +166,19 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
     });
     const page = await browser.newPage();
     await page.setContent(htmlContent);
+
     const pdfPath = path.join("./", `acta_${numeroOrden}.pdf`);
+
     await page.pdf({ 
         path: pdfPath, 
         format: 'A4', 
-        margin: { right: '20mm', left: '20mm' } 
+        margin: {  right: '15mm',  left: '15mm' }
     });
-    
+
     await browser.close();
     return pdfPath;
 };
+
 
 
 const enviarCorreoConPDF = async (email, pdfPath, numeroOrden) => {
