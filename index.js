@@ -125,11 +125,11 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
             Conste por el presente documento, que en la fecha se está recibiendo el Servicio correspondiente a la Orden de ${Tipo} Nro. <b>${numeroOrden}</b>, 
             realizado por el proveedor:
         </p>
-        <h2 style="text-align:center;font-size: 16px;">${proveedor.toUpperCase()}</h2>
+        <h2 style="text-align:center;font-size: 20px;">${proveedor.toUpperCase()}</h2>
         <p class="content">Mediante este documento se deja constancia que la empresa <b>PARQUE DEL NORTE S.A.</b> se encuentra conforme con el servicio recibido:</p>
         A continuación, se detalla el producto de: 
         </p>
-        <h3 style="text-align:center;font-size: 16px;">${detalle.toUpperCase()}</h3>
+        <h2 style="text-align:center;font-size: 20px;">${detalle.toUpperCase()}</h2>
         <p class="content">
             Habiéndose culminado el presente trabajo en satisfacción del usuario y correspondiente a la Orden de ${Tipo} Nro. <b>${numeroOrden}</b>, se brinda la conformidad por parte de <b>PARQUE DEL NORTE S.A</b>., y se firma la presente. </p>
         <p class="content">Chiclayo, ${fechaActual}</p>
