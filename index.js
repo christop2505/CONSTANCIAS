@@ -150,7 +150,12 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
     const page = await browser.newPage();
     await page.setContent(htmlContent);
     const pdfPath = path.join("./", `acta_${numeroOrden}.pdf`);
-    await page.pdf({ path: pdfPath, format: 'A4' });
+    await page.pdf({ 
+        path: pdfPath, 
+        format: 'A4', 
+        margin: { right: '20mm', left: '20mm' } 
+    });
+    
     await browser.close();
     return pdfPath;
 };
