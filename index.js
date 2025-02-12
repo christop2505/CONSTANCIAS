@@ -118,8 +118,7 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
         
         <div class="title">ACTA DE CONFORMIDAD</div>
         <p class="content">
-            Conste por el presente documento que, en la fecha ${fechaActual}, 
-            se está recibiendo el servicio correspondiente a la Orden de Servicio Nro. <b>${numeroOrden}</b>, 
+            Conste por el presente documento que, en la fecha, se está recibiendo el servicio correspondiente a la Orden de Servicio Nro. <b>${numeroOrden}</b>, 
             realizado por el proveedor:
         </p>
         <h2 style="text-align:center;">${proveedor}</h2>
