@@ -187,9 +187,8 @@ expressApp.get('/aprobar-orden', async (req, res) => {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
         
-       
         const { Norden, Proveedor, Detalle, Id_usuario } = orden_2[0];
-        const [V_usuario] = await pool.query('SELECT Correo , Nombre_Completo FROM usuario WHERE Id_usuario = ?', [idUsuario]);
+        const [V_usuario] = await pool.query('SELECT Correo , Nombre_Completo FROM usuario WHERE Id_usuario = ?', [Id_usuario]);
         if (orden.length === 0) {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
