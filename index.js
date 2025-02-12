@@ -106,7 +106,7 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
         body { font-family: Arial, sans-serif; margin: 40px; }
         .header { background-color: green; color: green; padding: 10px; text-align: left; }
         .header p { font-size: 12px; margin: 0; }
-        .title { font-size: 18px; font-weight: bold; text-align: center; margin-top: 20px; }
+        .title { font-size: 24px; font-weight: bold; text-align: center; margin-top: 20px; }
         .content { margin-top: 30px; font-size: 16px; text-align: left; }
         .firma { margin-top: 50px; text-align: left; }
         .firma img { width: 200px; }
@@ -125,11 +125,11 @@ const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Complet
             Conste por el presente documento, que en la fecha se está recibiendo el Servicio correspondiente a la Orden de ${Tipo} Nro. <b>${numeroOrden}</b>, 
             realizado por el proveedor:
         </p>
-        <h2 style="text-align:center;">${proveedor}</h2>
+        <h2 style="text-align:center;font-size: 16px;">${proveedor.toUpperCase()}</h2>
         <p class="content">Mediante este documento se deja constancia que la empresa <b>PARQUE DEL NORTE S.A.</b> se encuentra conforme con el servicio recibido:</p>
         A continuación, se detalla el producto de: 
         </p>
-        <h3 style="text-align:center;">${detalle}</h3>
+        <h3 style="text-align:center;font-size: 16px;">${detalle.toUpperCase()}</h3>
         <p class="content">
             Habiéndose culminado el presente trabajo en satisfacción del usuario y correspondiente a la Orden de ${Tipo} Nro. <b>${numeroOrden}</b>, se brinda la conformidad por parte de <b>PARQUE DEL NORTE S.A</b>., y se firma la presente. </p>
         <p class="content">Chiclayo, ${fechaActual}</p>
