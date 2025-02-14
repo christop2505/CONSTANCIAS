@@ -49,9 +49,9 @@ const enviarCorreo = async (email, numero_constancia,numero_orden) => {
 };
 
 expressApp.post('/registrar-orden', async (req, res) => {
-    const { Id_usuario, detalle, proveedor, tipo, Norden, email } = req.body;
+    const { Id_usuario, detalle, proveedor, tipo, Norden } = req.body;
     
-    if (!Id_usuario || !detalle || !proveedor || !tipo || !Norden || !email) {
+    if (!Id_usuario || !detalle || !proveedor || !tipo || !Norden ) {
         return res.status(400).json({ error: 'Todos los campos son obligatorios' });
     }
 
@@ -74,15 +74,27 @@ expressApp.post('/registrar-orden', async (req, res) => {
 
         const NContancia = constanciaResult[0].NContancia;
 
+        const [NCorreo] = await pool.query(
+            'SELECT Correo FROM usuario WHERE Id_usuario = ?',
+            [Id_usuario]
+        );
+
+        if (NCorreo.length === 0) {
+            return res.status(500).json({ error: 'No se encontró la constancia para esta orden' });
+        }
+        
+        const { Correo } = NCorreo[0];
+
         // Enviar correo con enlaces de aprobación/rechazo usando el numero_constancia
-        await enviarCorreo(email, NContancia,Norden);
+        await enviarCorreo(Correo, NContancia,Norden);
 
         res.json({ message: 'Orden registrada exitosamente y correo enviado', NContancia });
     } catch (error) {
         console.error('Error al registrar la orden:', error);
         res.status(500).json({ error: 'Error en el servidor' });
     }
-});
+}
+);
 
 
 const obtenerFirmaUsuario = async (idUsuario) => {
