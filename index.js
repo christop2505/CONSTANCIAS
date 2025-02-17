@@ -99,6 +99,8 @@ const obtenerFirmaUsuario = async (idUsuario) => {
         return null;
     }
 
+    console.log(usuario[0]);
+    console.log(usuario[0][0]);
     // Accedemos correctamente al blob
     const { firma } = usuario[0][0];
 
@@ -243,6 +245,7 @@ expressApp.get('/aprobar-orden', async (req, res) => {
         }
         const { Correo,Nombre_Completo } = V_usuario[0][0];
         const firma = await obtenerFirmaUsuario(Id_usuario);
+        console.log(firma)
         console.log(Id_usuario)
         await pool.query('CALL ActualizarAprobado(?)', [numero_constancia]);
         const pdfPath = await generarPDF(Norden, Proveedor, Detalle, firma,Nombre_Completo,Tipo);
