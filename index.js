@@ -96,22 +96,25 @@ const obtenerFirmaUsuario = async (idUsuario) => {
 
     // Verificamos si hay datos en el resultado
     if (!usuario || usuario.length === 0 || usuario[0].length === 0) {
+        console.log('No se encontró ninguna firma para este usuario');
         return null;
     }
 
-    console.log(usuario[0]);
-    console.log(usuario[0][0]);
+    // Log del resultado completo
+    console.log('Resultado completo:', usuario[0]);
+
     // Accedemos correctamente al blob
     const { firma } = usuario[0][0];
 
-    if (!firma) {
+    if (!firma || firma.length === 0) {
+        console.log('La firma está vacía');
         return null;
     }
 
-    // Convertimos el BLOB a Base64
+    // Convertimos el Buffer a Base64
     const firmaBase64 = firma.toString('base64');
     
-    console.log(firmaBase64); // Debugging
+    console.log('Firma en Base64:', firmaBase64); // Debugging
     return `data:image/png;base64,${firmaBase64}`;
 };
 
