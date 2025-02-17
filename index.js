@@ -63,27 +63,21 @@ expressApp.post('/registrar-orden', async (req, res) => {
         );
 
         // Buscar el último numero_constancia generado para esta orden
-        const [constanciaResult] = await pool.query(
-            'SELECT NContancia FROM Acta WHERE Norden = ? ORDER BY NContancia DESC LIMIT 1',
-            [Norden]
-        );
+        const [constanciaResult] = await pool.query('CALL ObtenerUltimoNContancia(?)', [Norden]);
 
-        if (constanciaResult.length === 0) {
+        if (!constanciaResult || constanciaResult.length === 0) {
             return res.status(500).json({ error: 'No se encontró la constancia para esta orden' });
         }
 
-        const NContancia = constanciaResult[0].NContancia;
+        const NContancia = constanciaResult[0][0].NContancia; // Acceder al valor correcto dentro de la estructura de respuesta
 
-        const [NCorreo] = await pool.query(
-            'SELECT Correo FROM usuario WHERE Id_usuario = ?',
-            [Id_usuario]
-        );
+        const [NCorreo] = await pool.query('CALL ObtenerCorreo(?)', [Id_usuario]);
 
         if (NCorreo.length === 0) {
             return res.status(500).json({ error: 'No se encontró la constancia para esta orden' });
         }
         
-        const { Correo } = NCorreo[0];
+        const { Correo } = NCorreo[0][0];
 
         // Enviar correo con enlaces de aprobación/rechazo usando el numero_constancia
         await enviarCorreo(Correo, NContancia,Norden);
@@ -98,7 +92,7 @@ expressApp.post('/registrar-orden', async (req, res) => {
 
 
 const obtenerFirmaUsuario = async (idUsuario) => {
-    const [usuario] = await pool.query('SELECT firma FROM usuario WHERE Id_usuario = ?', [idUsuario]);
+    const [usuario] = await pool.query('CALL ObtenerFirma(?)', [idUsuario]);
     if (usuario.length > 0 && usuario[0].firma) {
         return `data:image/png;base64,${usuario[0].firma.toString('base64')}`;
     }
@@ -216,25 +210,25 @@ expressApp.get('/aprobar-orden', async (req, res) => {
     }
 
     try {
-        const [orden] = await pool.query('SELECT Id_orden FROM Acta WHERE NContancia = ?', [numero_constancia]);
+        const [orden] = await pool.query('CALL ObtenerIdOrden(?)', [numero_constancia]);
         if (orden.length === 0) {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
 
         const { Id_orden } = orden[0];
-        const [orden_2] = await pool.query('SELECT * FROM orden WHERE ID = ?', [Id_orden]);
+        const [orden_2] = await pool.query('CALL ObtenerOrden(?)', [Id_orden]);
         if (orden.length === 0) {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
         
         const { Norden, Proveedor, Detalle, Id_usuario,Tipo } = orden_2[0];
-        const [V_usuario] = await pool.query('SELECT Correo , Nombre_Completo FROM usuario WHERE Id_usuario = ?', [Id_usuario]);
+        const [V_usuario] = await pool.query('CALL ObtenerDatosUsuario(?)', [Id_usuario]);
         if (orden.length === 0) {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
         const { Correo,Nombre_Completo } = V_usuario[0];
         const firma = await obtenerFirmaUsuario(Id_usuario);
-        await pool.query('UPDATE Acta SET estado = 1 WHERE NContancia = ?', [numero_constancia]);
+        await pool.query('CALL ActualizarAprobado(?)', [numero_constancia]);
         const pdfPath = await generarPDF(Norden, Proveedor, Detalle, firma,Nombre_Completo,Tipo);
         await enviarCorreoConPDF(Correo, pdfPath, Norden);
         res.send('Orden aprobada y correo con acta enviado');
@@ -255,7 +249,7 @@ expressApp.get('/rechazar-orden', async (req, res) => {
     try {
 
         // No cambia el estado en Acta porque por defecto es 0 (rechazado)
-        await pool.query('UPDATE Acta SET estado = 0 WHERE NContancia = ?', [numero_constancia]);
+        await pool.query('CALL ActualizarRechazado(?)', [numero_constancia]);
 
         res.send('Orden rechazada con éxito y estado actualizado en Acta');
     } catch (error) {
