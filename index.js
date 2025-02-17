@@ -215,18 +215,18 @@ expressApp.get('/aprobar-orden', async (req, res) => {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
 
-        const { Id_orden } = orden[0];
+        const { Id_orden } = orden[0][0];
         const [orden_2] = await pool.query('CALL ObtenerOrden(?)', [Id_orden]);
         if (orden.length === 0) {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
         
-        const { Norden, Proveedor, Detalle, Id_usuario,Tipo } = orden_2[0];
+        const { Norden, Proveedor, Detalle, Id_usuario,Tipo } = orden_2[0][0];
         const [V_usuario] = await pool.query('CALL ObtenerDatosUsuario(?)', [Id_usuario]);
         if (orden.length === 0) {
             return res.status(404).json({ error: 'Orden no encontrada' });
         }
-        const { Correo,Nombre_Completo } = V_usuario[0];
+        const { Correo,Nombre_Completo } = V_usuario[0][0];
         const firma = await obtenerFirmaUsuario(Id_usuario);
         await pool.query('CALL ActualizarAprobado(?)', [numero_constancia]);
         const pdfPath = await generarPDF(Norden, Proveedor, Detalle, firma,Nombre_Completo,Tipo);
