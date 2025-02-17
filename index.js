@@ -77,7 +77,7 @@ expressApp.post('/registrar-orden', async (req, res) => {
             return res.status(500).json({ error: 'No se encontró la constancia para esta orden' });
         }
         
-        const { Correo } = NCorreo[0];
+        const { Correo } = NCorreo[0][0];
 
         // Enviar correo con enlaces de aprobación/rechazo usando el numero_constancia
         await enviarCorreo(Correo, NContancia,Norden);
