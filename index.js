@@ -93,13 +93,26 @@ expressApp.post('/registrar-orden', async (req, res) => {
 
 const obtenerFirmaUsuario = async (idUsuario) => {
     const [usuario] = await pool.query('CALL ObtenerFirma(?)', [idUsuario]);
-    if (usuario.length > 0 && usuario[0].firma) {
-        const { firma } = usuario[0][0];
-        console.log(firma);
-        return `data:image/png;base64,${firma.toString('base64')}`;
+
+    // Verificamos si hay datos en el resultado
+    if (!usuario || usuario.length === 0 || usuario[0].length === 0) {
+        return null;
     }
-    return null;
+
+    // Accedemos correctamente al blob
+    const { firma } = usuario[0][0];
+
+    if (!firma) {
+        return null;
+    }
+
+    // Convertimos el BLOB a Base64
+    const firmaBase64 = firma.toString('base64');
+    
+    console.log(firmaBase64); // Debugging
+    return `data:image/png;base64,${firmaBase64}`;
 };
+
 
 const generarPDF = async (numeroOrden, proveedor, detalle, firma, Nombre_Completo, Tipo) => {
     const fechaActual = new Date().toLocaleDateString('es-PE', {
@@ -230,6 +243,7 @@ expressApp.get('/aprobar-orden', async (req, res) => {
         }
         const { Correo,Nombre_Completo } = V_usuario[0][0];
         const firma = await obtenerFirmaUsuario(Id_usuario);
+        console.log(Id_usuario)
         await pool.query('CALL ActualizarAprobado(?)', [numero_constancia]);
         const pdfPath = await generarPDF(Norden, Proveedor, Detalle, firma,Nombre_Completo,Tipo);
         await enviarCorreoConPDF(Correo, pdfPath, Norden);
